@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Suerte e Probabilidad | Lotería</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #ffffff;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .main-card {
+      background: rgba(255, 255, 255, 0.07);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 1.5rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+    .accent-gold {
+      color: #ffd700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+    .btn-gold {
+      background: linear-gradient(45deg, #ffb300, #ff8c00);
+      border: none;
+      color: #000;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+    .btn-gold:hover {
+      background: linear-gradient(45deg, #ff8c00, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 140, 0, 0.4);
+      color: #000;
+    }
+    .progress {
+      height: 25px;
+      border-radius: 15px;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    .stat-badge {
+      font-size: 1.1rem;
+      border-radius: 50rem;
+    }
+  </style>
+</head>
+<body class="d-flex align-items-center justify-content-center py-5">
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-8 col-md-10">
+        
+        <!-- Tarjeta Principal -->
+        <div class="main-card p-4 p-md-5 text-center">
+          
+          <!-- Encabezado -->
+          <div class="mb-4">
+            <i class="bi bi-ticket-perforated-fill display-1 accent-gold mb-2"></i>
+            <h1 class="fw-bold">Probabilidad de Lotería según tu Mes</h1>
+            <p class="text-light opacity-75">
+              Descubre cómo varía tu índice de "suerte" y posibilidades promedio según el mes en que naciste.
+            </p>
+          </div>
+
+          <!-- Formulario / Selección -->
+          <div class="row justify-content-center mb-4">
+            <div class="col-md-8">
+              <label for="mesNacimiento" class="form-label fw-semibold">Selecciona tu mes de nacimiento:</label>
+              <select id="mesNacimiento" class="form-select form-select-lg text-center bg-dark text-white border-secondary">
+                <option value="" selected disabled>-- Elegir mes --</option>
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+              </select>
+              <button onclick="calcularProbabilidad()" class="btn btn-gold btn-lg w-100 mt-3">
+                <i class="bi bi-stars me-2"></i>Calcular Probabilidad
+              </button>
+            </div>
+          </div>
+
+          <!-- Contenedor de Resultados (Oculto al inicio) -->
+          <div id="resultadoContainer" class="d-none">
+            <hr class="my-4 border-secondary">
+
+            <div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+              <span id="badgeTendencia" class="badge stat-badge px-3 py-2"></span>
+              <span id="porcentajeVariacion" class="fw-bold fs-5"></span>
+            </div>
+
+            <h2 id="porcentajeBase" class="display-3 fw-bold accent-gold my-2">0%</h2>
+            <p id="mesSeleccionadoTexto" class="text-uppercase tracking-wider fw-semibold opacity-75 mb-4"></p>
+
+            <!-- Barra de progreso -->
+            <div class="mb-4">
+              <div class="d-flex justify-content-between text-sm mb-1">
+                <small>Baja posibilidad</small>
+                <small>Promedio global</small>
+                <small>Alta posibilidad</small>
+              </div>
+              <div class="progress">
+                <div id="barraProgreso" class="progress-bar progress-bar-striped progress-bar-animated" 
+                     role="progressbar" style="width: 0%;"></div>
+              </div>
+            </div>
+
+            <!-- Explicación -->
+            <div class="p-3 rounded-3 bg-dark bg-opacity-50 text-start border border-secondary">
+              <h5 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Análisis:</h5>
+              <p id="descripcionResultado" class="mb-0 text-light opacity-90"></p>
+            </div>
+
+            <p class="mt-4 mb-0 text-muted fs-7">
+              <small><em>Nota: Matemáticamente las posibilidades de ganar la lotería dependen de la cantidad de números jugados (aprox. 1 en 14,000,000). Esta escala refleja estadísticas hipotéticas y tendencias por época del año.</em></small>
+            </p>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Script JS para la lógica interactiva -->
+  <script>
+    const datosMeses = {
+      1: { nombre: "Enero", variacion: -5, desc: "Comienzo de año con mayor compra masiva de boletos, lo que aumenta la competencia y disminuye levemente tus probabilidades individuales en sorteos compartidos.", barra: 40, colorBarra: "bg-warning" },
+      2: { nombre: "Febrero", variacion: +2, desc: "Suelen realizarse sorteos especiales de menor volumen. Tu probabilidad promedio sube ligeramente respecto al promedio anual.", barra: 52, colorBarra: "bg-info" },
+      3: { nombre: "Marzo", variacion: +7, desc: "Mes de estabilidad estadística. Históricamente muestra un ligero repunte en la distribución de premios menores.", barra: 57, colorBarra: "bg-success" },
+      4: { nombre: "Abril", variacion: -2, desc: "Ligeros descensos por fluctuación de participación. Te mantienes dentro de la media global.", barra: 48, colorBarra: "bg-warning" },
+      5: { nombre: "Mayo", variacion: +10, desc: "¡Mes con tendencia al alza! Varias festividades aumentan los pozos acumulados, mejorando la relación costo-beneficio del boleto.", barra: 60, colorBarra: "bg-success" },
+      6: { nombre: "Junio", variacion: 0, desc: "Nivel completamente neutro. Representa exactamente la media matemática estándar de la lotería.", barra: 50, colorBarra: "bg-primary" },
+      7: { nombre: "Julio", variacion: +4, desc: "Período de mitad de año con varianza positiva moderada en acumulación de premios.", barra: 54, colorBarra: "bg-info" },
+      8: { nombre: "Agosto", variacion: -4, desc: "Disminución en el ritmo general de compra, manteniendo baja la probabilidad relativa de pozos gigantes.", barra: 46, colorBarra: "bg-warning" },
+      9: { nombre: "Septiembre", variacion: +8, desc: "Excelente repunte de probabilidad promedio debido al inicio de temporadas de grandes sorteos.", barra: 58, colorBarra: "bg-success" },
+      10: { nombre: "Octubre", variacion: +1, desc: "Comportamiento estable con ligero sesgo positivo hacia finales del mes.", barra: 51, colorBarra: "bg-info" },
+      11: { nombre: "Noviembre", variacion: -8, desc: "Acumulación masiva previa a fin de año. Más participantes reducen tu probabilidad relativa por billete.", barra: 42, colorBarra: "bg-danger" },
+      12: { nombre: "Diciembre", variacion: +15, desc: "¡Pico máximo anual! Aunque hay más compradores, los sorteos extraordinarios duplican o triplican las bolsas de premios y reintegros disponibles.", barra: 75, colorBarra: "bg-success" }
+    };
+
+    function calcularProbabilidad() {
+      const select = document.getElementById("mesNacimiento");
+      const mes = select.value;
+
+      if (!mes) {
+        alert("Por favor, selecciona un mes.");
+        return;
+      }
+
+      const info = datosMeses[mes];
+      const container = document.getElementById("resultadoContainer");
+      const badge = document.getElementById("badgeTendencia");
+      const porcentajeVar = document.getElementById("porcentajeVariacion");
+      const porcentajeBase = document.getElementById("porcentajeBase");
+      const mesTexto = document.getElementById("mesSeleccionadoTexto");
+      const barra = document.getElementById("barraProgreso");
+      const descripcion = document.getElementById("descripcionResultado");
+
+      // Mostrar contenedor
+      container.classList.remove("d-none");
+
+      // Actualizar datos
+      mesTexto.textContent = `Resultados para nacidos en ${info.nombre}`;
+      porcentajeBase.textContent = `${info.barra}%`;
+      descripcion.textContent = info.desc;
+
+      // Configurar badge de tendencia
+      if (info.variacion > 0) {
+        badge.className = "badge stat-badge px-3 py-2 bg-success text-white";
+        badge.innerHTML = '<i class="bi bi-graph-up-arrow me-1"></i> Aumenta';
+        porcentajeVar.textContent = `+${info.variacion}% respecto al promedio`;
+        porcentajeVar.className = "fw-bold fs-5 text-success";
+      } else if (info.variacion < 0) {
+        badge.className = "badge stat-badge px-3 py-2 bg-danger text-white";
+        badge.innerHTML = '<i class="bi bi-graph-down-arrow me-1"></i> Disminuye';
+        porcentajeVar.textContent = `${info.variacion}% respecto al promedio`;
+        porcentajeVar.className = "fw-bold fs-5 text-danger";
+      } else {
+        badge.className = "badge stat-badge px-3 py-2 bg-primary text-white";
+        badge.innerHTML = '<i class="bi bi-dash-lg me-1"></i> Sin cambio';
+        porcentajeVar.textContent = `En la media exacta`;
+        porcentajeVar.className = "fw-bold fs-5 text-info";
+      }
+
+      // Animación de la barra de progreso
+      barra.className = `progress-bar progress-bar-striped progress-bar-animated ${info.colorBarra}`;
+      barra.style.width = "0%";
+      setTimeout(() => {
+        barra.style.width = `${info.barra}%`;
+      }, 100);
+    }
+  </script>
+
+  <!-- Bootstrap 5 JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html
